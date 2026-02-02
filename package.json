@@ -1,6 +1,6 @@
 {
   "name": "@vibeathon-us/openrouter-launch",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Launch AI coding tools with OpenRouter's 400+ model catalog",
   "keywords": [
     "openrouter",
@@ -15,7 +15,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vibeathon-us/openrouter-launch.git"
+    "url": "git+https://github.com/vibeathon-us/openrouter-launch.git"
   },
   "homepage": "https://github.com/vibeathon-us/openrouter-launch#readme",
   "bugs": {
