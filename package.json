@@ -1,0 +1,56 @@
+{
+  "name": "@truefrontier/openrouter-launch",
+  "version": "1.0.0",
+  "description": "Launch AI coding tools with OpenRouter's 400+ model catalog",
+  "keywords": [
+    "openrouter",
+    "claude",
+    "aider",
+    "opencode",
+    "ai",
+    "llm",
+    "cli"
+  ],
+  "author": "TrueFrontier",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/truefrontier/openrouter-launch.git"
+  },
+  "homepage": "https://github.com/truefrontier/openrouter-launch#readme",
+  "bugs": {
+    "url": "https://github.com/truefrontier/openrouter-launch/issues"
+  },
+  "type": "module",
+  "bin": {
+    "openrouter-launch": "dist/index.js",
+    "or-launch": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && shx chmod +x dist/*.js",
+    "dev": "tsc --watch",
+    "test": "node --test",
+    "prepare": "npm run build",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "cross-spawn": "^7.0.3",
+    "ora": "^8.0.1",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/cross-spawn": "^6.0.6",
+    "@types/node": "^20.11.0",
+    "@types/prompts": "^2.4.9",
+    "shx": "^0.3.4",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
