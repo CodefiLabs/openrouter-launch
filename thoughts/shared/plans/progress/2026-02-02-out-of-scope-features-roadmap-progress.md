@@ -28,3 +28,21 @@ Implemented OpenRouter provider preferences for the openrouter-launch CLI. Added
 Pending - manual testing instructions provided
 
 ---
+
+## Phase 2: Live Model Fetching (v0.3)
+
+**Completed**: 2026-02-02
+**Status**: COMPLETE
+**Commits**: 83bd261
+**Tests**: PASS
+
+### Summary
+Implemented live model fetching from OpenRouter API with intelligent caching. The script now fetches the full model catalog (300+ models) when jq is available, caches it for 1 hour at `~/.cache/openrouter/models.json`, and prioritizes coding models (Claude, GPT-4, Gemini, DeepSeek, Llama, Qwen, Mistral, Grok) in the selection menu. The system gracefully falls back through multiple levels: valid cache -> API fetch -> stale cache -> built-in model list. Added cross-platform support for cache age detection (macOS stat -f vs Linux stat -c) and a `--refresh-models` flag for forcing cache refresh.
+
+### Sub-Agents Used
+- 1x general-purpose (implementation)
+
+### Manual Test Results
+Pending - manual testing instructions provided
+
+---
