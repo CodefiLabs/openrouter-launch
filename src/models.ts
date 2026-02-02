@@ -2,15 +2,21 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import ora from 'ora';
-import prompts from 'prompts';
 import chalk from 'chalk';
 import { logInfo, logError, formatPrice } from './utils.js';
+import Enquirer from 'enquirer';
 
 export interface Model {
   id: string;
   pricing: string;
   promptPrice: number;
   completionPrice: number;
+}
+
+interface ModelChoice {
+  name: string;
+  message: string;
+  value: string;
 }
 
 const CACHE_DIR = path.join(os.homedir(), '.cache', 'openrouter');
@@ -296,40 +302,57 @@ export function getModelPricing(modelId: string, models: Model[]): string {
 }
 
 /**
- * Interactive model selection menu
+ * Interactive model selection menu with fuzzy search
  */
 export async function selectModel(models: Model[]): Promise<string | null> {
-  console.error('\nSelect a model:\n');
-
-  // Display models
-  models.forEach((model, index) => {
-    const num = String(index + 1).padStart(2, ' ');
-    const name = model.id.padEnd(40, ' ');
-    console.error(`  ${chalk.cyan(num)}) ${name} ${chalk.dim(model.pricing)}`);
-  });
-
-  console.error('');
-
-  const response = await prompts({
-    type: 'text',
-    name: 'selection',
-    message: `Enter number (1-${models.length}) or model name:`
-  });
-
-  if (!response.selection) {
+  if (models.length === 0) {
+    logError('No models available');
     return null;
   }
 
-  const selection = response.selection.trim();
+  // Build choices array for enquirer
+  const choices: ModelChoice[] = models.map(model => ({
+    name: model.id,
+    message: model.id.padEnd(40, ' ') + chalk.dim(model.pricing),
+    value: model.id
+  }));
 
-  // Check if it's a number
-  const num = parseInt(selection, 10);
-  if (!isNaN(num) && num >= 1 && num <= models.length) {
-    return models[num - 1].id;
+  console.error('');
+  console.error(chalk.dim('↑↓ Navigate • Type to filter • Enter to select • Esc to cancel'));
+  console.error('');
+
+  try {
+    // Use static prompt method with type assertion for autocomplete options
+    // (suggest is a valid option but not in the type definitions)
+    const response = await Enquirer.prompt<{ model: string }>({
+      type: 'autocomplete',
+      name: 'model',
+      message: 'Select a model',
+      limit: 15,
+      choices,
+      suggest(input: string, choices: ModelChoice[]) {
+        const search = input.toLowerCase();
+
+        // First check if input matches an alias
+        const aliasMatch = MODEL_ALIASES[search];
+        if (aliasMatch) {
+          return choices.filter(choice => choice.name === aliasMatch);
+        }
+
+        // Otherwise fuzzy match on model name
+        return choices.filter(choice =>
+          choice.name.toLowerCase().includes(search)
+        );
+      }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    console.error(''); // Blank line after prompt
+    return response.model;
+  } catch (error) {
+    // User cancelled (Ctrl+C or Escape)
+    return null;
   }
-
-  // Try as model name or alias
-  return resolveModel(selection, models);
 }
 
 /**
