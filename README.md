@@ -10,10 +10,8 @@ Supports:
 ## Quick Start
 
 ```bash
-# Clone and install
-git clone https://github.com/truefrontier/openrouter-launch.git
-cd openrouter-launch
-sudo make install
+# One-line install
+curl -fsSL https://raw.githubusercontent.com/truefrontier/openrouter-launch/main/install.sh | bash
 
 # Launch with your OpenRouter API key
 openrouter-launch
@@ -31,6 +29,30 @@ openrouter-launch
 - Quick launch mode for repeat usage
 
 ## Installation
+
+### curl | bash (Recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/truefrontier/openrouter-launch/main/install.sh | bash
+```
+
+This installs to `~/.local/bin` (user) or `/usr/local/bin` (with sudo).
+
+### Homebrew
+
+```bash
+# Add the tap
+brew tap truefrontier/tap
+
+# Install
+brew install openrouter-launch
+```
+
+Or install directly:
+
+```bash
+brew install truefrontier/tap/openrouter-launch
+```
 
 ### From Source
 
