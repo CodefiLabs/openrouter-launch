@@ -10,16 +10,22 @@ Supports:
 ## Quick Start
 
 ```bash
-# One-line install
-curl -fsSL https://raw.githubusercontent.com/truefrontier/openrouter-launch/main/install.sh | bash
+# npm (cross-platform, recommended)
+npx @truefrontier/openrouter-launch
 
-# Launch with your OpenRouter API key
+# Or install globally
+npm install -g @truefrontier/openrouter-launch
+openrouter-launch
+
+# macOS/Linux: One-line bash install
+curl -fsSL https://raw.githubusercontent.com/truefrontier/openrouter-launch/main/install.sh | bash
 openrouter-launch
 ```
 
 ## Features
 
-- **Live model catalog**: Fetches 300+ models from OpenRouter API (requires jq)
+- **Cross-platform**: Works on macOS, Linux, and Windows (via npm)
+- **Live model catalog**: Fetches 300+ models from OpenRouter API
 - **Smart caching**: Model list cached for 1 hour at `~/.cache/openrouter/models.json`
 - **Coding-focused**: Prioritizes popular coding models (Claude, GPT-4, Gemini, etc.)
 - Interactive model selection with pricing info
@@ -30,7 +36,23 @@ openrouter-launch
 
 ## Installation
 
-### curl | bash (Recommended)
+### npm (Recommended - All Platforms)
+
+```bash
+# Run directly with npx (no install needed)
+npx @truefrontier/openrouter-launch
+
+# Or install globally
+npm install -g @truefrontier/openrouter-launch
+openrouter-launch
+
+# Short alias also available
+or-launch
+```
+
+Works on macOS, Linux, and Windows. Requires Node.js 18+.
+
+### curl | bash (macOS/Linux)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/truefrontier/openrouter-launch/main/install.sh | bash
@@ -38,7 +60,7 @@ curl -fsSL https://raw.githubusercontent.com/truefrontier/openrouter-launch/main
 
 This installs to `~/.local/bin` (user) or `/usr/local/bin` (with sudo).
 
-### Homebrew
+### Homebrew (macOS/Linux)
 
 ```bash
 # Add the tap
@@ -59,23 +81,19 @@ brew install truefrontier/tap/openrouter-launch
 ```bash
 git clone https://github.com/truefrontier/openrouter-launch.git
 cd openrouter-launch
+
+# Node.js version (v1.0+)
+npm install
+npm run build
+npm link
+
+# Bash script version (v0.x)
 sudo make install
 ```
 
 This installs:
 - `/usr/local/bin/openrouter-launch`
 - `/usr/local/bin/or-launch` (symlink)
-
-### Manual
-
-```bash
-# Copy script to your PATH
-cp bin/openrouter-launch /usr/local/bin/
-chmod +x /usr/local/bin/openrouter-launch
-
-# Optional: create short alias
-ln -s /usr/local/bin/openrouter-launch /usr/local/bin/or-launch
-```
 
 ## Usage
 
@@ -262,13 +280,18 @@ openrouter-launch
 
 ## Requirements
 
-- Bash 3.2+
-- curl
-- jq (optional, for live model fetching)
+### npm Version (v1.0+)
+- Node.js 18+
 - At least one supported tool:
   - [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
   - [Aider](https://aider.chat/docs/install.html)
   - [OpenCode](https://github.com/opencode-ai/opencode)
+
+### Bash Version (v0.x)
+- Bash 3.2+
+- curl
+- jq (optional, for live model fetching)
+- At least one supported tool (same as above)
 
 ## How It Works
 
@@ -286,8 +309,15 @@ This routes Claude Code's API requests through OpenRouter, allowing you to use a
 ## Uninstall
 
 ```bash
+# npm version
+npm uninstall -g @truefrontier/openrouter-launch
+
+# Bash version
 sudo make uninstall
+
+# Remove config (both versions)
 rm -rf ~/.openrouter-launch
+rm -rf ~/.cache/openrouter
 ```
 
 ## License
