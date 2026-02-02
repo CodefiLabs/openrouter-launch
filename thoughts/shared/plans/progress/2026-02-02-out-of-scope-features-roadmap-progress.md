@@ -46,3 +46,21 @@ Implemented live model fetching from OpenRouter API with intelligent caching. Th
 Pending - manual testing instructions provided
 
 ---
+
+## Phase 3: Multiple Integrations (v0.4)
+
+**Completed**: 2026-02-02
+**Status**: COMPLETE
+**Commits**: 7d94fd8
+**Tests**: PASS
+
+### Summary
+Added support for two additional AI coding tools: Aider and OpenCode. Both tools have native OpenRouter support, making integration straightforward. Aider uses `OPENROUTER_API_KEY` environment variable and accepts models in `openrouter/<model>` format via the `--model` CLI flag. OpenCode also uses `OPENROUTER_API_KEY` and auto-detects OpenRouter when the key is present. The implementation includes detection functions for each tool, dedicated launch functions that set up the proper environment, and a short alias `oc` for OpenCode. The README was updated with comprehensive usage examples for both tools.
+
+### Sub-Agents Used
+- 1x general-purpose (implementation)
+
+### Manual Test Results
+Pending - manual testing instructions provided
+
+---
