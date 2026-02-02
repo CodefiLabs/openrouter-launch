@@ -548,7 +548,7 @@ main() {
     # Launch based on integration
     case "$integration" in
         claude)
-            launch_claude "$selected_model" "${passthrough_args[@]}"
+            launch_claude "$selected_model" ${passthrough_args[@]+"${passthrough_args[@]}"}
             ;;
         *)
             log_error "Unknown integration: $integration"
