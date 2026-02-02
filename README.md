@@ -10,21 +10,18 @@ Supports:
 ## Quick Start
 
 ```bash
-# npm (cross-platform, recommended)
+# Run directly (no install needed)
 npx @truefrontier/openrouter-launch
 
 # Or install globally
 npm install -g @truefrontier/openrouter-launch
 openrouter-launch
-
-# macOS/Linux: One-line bash install
-curl -fsSL https://raw.githubusercontent.com/truefrontier/openrouter-launch/main/install.sh | bash
-openrouter-launch
 ```
 
 ## Features
 
-- **Cross-platform**: Works on macOS, Linux, and Windows (via npm)
+- **Fuzzy search**: Type to filter models, arrow keys to navigate
+- **Cross-platform**: Works on macOS, Linux, and Windows
 - **Live model catalog**: Fetches 300+ models from OpenRouter API
 - **Smart caching**: Model list cached for 1 hour at `~/.cache/openrouter/models.json`
 - **Coding-focused**: Prioritizes popular coding models (Claude, GPT-4, Gemini, etc.)
@@ -52,48 +49,31 @@ or-launch
 
 Works on macOS, Linux, and Windows. Requires Node.js 18+.
 
-### curl | bash (macOS/Linux)
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/truefrontier/openrouter-launch/main/install.sh | bash
-```
-
-This installs to `~/.local/bin` (user) or `/usr/local/bin` (with sudo).
-
-### Homebrew (macOS/Linux)
-
-```bash
-# Add the tap
-brew tap truefrontier/tap
-
-# Install
-brew install openrouter-launch
-```
-
-Or install directly:
-
-```bash
-brew install truefrontier/tap/openrouter-launch
-```
-
 ### From Source
 
 ```bash
 git clone https://github.com/truefrontier/openrouter-launch.git
 cd openrouter-launch
-
-# Node.js version (v1.0+)
 npm install
 npm run build
 npm link
-
-# Bash script version (v0.x)
-sudo make install
 ```
 
-This installs:
-- `/usr/local/bin/openrouter-launch`
-- `/usr/local/bin/or-launch` (symlink)
+### Legacy: curl | bash (macOS/Linux)
+
+> **Note**: The bash version (v0.x) is legacy and no longer receives new features like fuzzy search. Consider using the npm version instead.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/truefrontier/openrouter-launch/main/install.sh | bash
+```
+
+### Legacy: Homebrew (macOS/Linux)
+
+> **Note**: Homebrew installs the legacy bash version.
+
+```bash
+brew install truefrontier/tap/openrouter-launch
+```
 
 ## Usage
 
@@ -280,18 +260,14 @@ openrouter-launch
 
 ## Requirements
 
-### npm Version (v1.0+)
 - Node.js 18+
 - At least one supported tool:
   - [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
   - [Aider](https://aider.chat/docs/install.html)
   - [OpenCode](https://github.com/opencode-ai/opencode)
 
-### Bash Version (v0.x)
-- Bash 3.2+
-- curl
-- jq (optional, for live model fetching)
-- At least one supported tool (same as above)
+### Legacy Bash Version (v0.x)
+- Bash 3.2+, curl, jq (optional)
 
 ## How It Works
 

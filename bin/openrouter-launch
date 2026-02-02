@@ -61,6 +61,18 @@ log_success() {
     echo "✓ $*" >&2
 }
 
+log_warn() {
+    echo "[WARN] $*" >&2
+}
+
+show_deprecation_notice() {
+    echo "" >&2
+    log_warn "The bash version (v0.x) is legacy and no longer receives new features."
+    log_warn "Upgrade to the npm version for fuzzy search, better UI, and cross-platform support:"
+    echo "       npm install -g @truefrontier/openrouter-launch" >&2
+    echo "" >&2
+}
+
 #######################################
 # Dependency validation
 #######################################
@@ -910,6 +922,11 @@ main() {
                 ;;
         esac
     done
+
+    # Show deprecation notice (skip if OPENROUTER_LEGACY_NO_WARN is set)
+    if [[ -z "${OPENROUTER_LEGACY_NO_WARN:-}" ]]; then
+        show_deprecation_notice
+    fi
 
     # Check dependencies
     check_dependencies curl
