@@ -168,7 +168,6 @@ async function main(): Promise<void> {
 
       // Handle model selection
       let selectedModel: string | null = null;
-      let modelWasInteractive = false;
 
       if (options.model) {
         // Load models to validate
@@ -188,17 +187,14 @@ async function main(): Promise<void> {
           logError('No model selected');
           process.exit(1);
         }
-        modelWasInteractive = true;
       }
 
-      // Save as default if requested
+      // Save as default only if explicitly requested via --save-default flag
       if (options.saveDefault) {
         saveConfig({
           OPENROUTER_API_KEY: config.OPENROUTER_API_KEY,
           DEFAULT_MODEL: selectedModel
         });
-      } else if (modelWasInteractive) {
-        await maybeSaveDefaultModel(selectedModel, config.DEFAULT_MODEL);
       }
 
       // Update config with selected model
