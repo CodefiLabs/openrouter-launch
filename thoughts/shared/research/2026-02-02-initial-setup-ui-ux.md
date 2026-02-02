@@ -222,3 +222,150 @@ Launching Claude Code with OpenRouter...
 3. **Batch Mode**: Does the TypeScript version support non-interactive batch operations (e.g., passing API key as argument)?
 4. **Model Update Frequency**: How often is the cached model list refreshed? Are there TTL mechanisms?
 5. **Migration Path**: What's the strategy for users currently using bash v0.5.0 to adopt TypeScript v1.0?
+
+---
+
+## Future UI/UX Ideals
+
+### Reference: Modern TUI Model Selection
+
+The following describes a more advanced TUI (Text User Interface) approach for model selection, inspired by tools like OpenCode and Lazygit. This would significantly improve the user experience over the current numbered list approach.
+
+### Desired Features
+
+1. **Fuzzy Search/Filter**
+   - Type to filter models instantly
+   - Search input at top of interface
+   - Real-time filtering as user types
+
+2. **Arrow Key Navigation**
+   - Up/down arrows to scroll through list
+   - Page up/down for faster navigation
+   - Home/End to jump to start/end
+
+3. **Highlighted Selection**
+   - Current item has colored/inverted background
+   - Visual distinction between selected and unselected items
+   - Smooth scrolling with cursor following
+
+4. **Provider Grouping**
+   - Models grouped by provider (Anthropic, OpenAI, Google, etc.)
+   - Collapsible sections (optional)
+   - Provider headers as visual separators
+
+5. **Keyboard Shortcuts**
+   - `ESC` - Cancel/exit
+   - `Enter` - Select current item
+   - `Ctrl+A` - Connect provider (future)
+   - `Ctrl+F` - Favorite/pin model
+
+6. **Status Bar**
+   - Shows keyboard shortcuts at bottom
+   - Model count indicator
+   - Current filter state
+
+### Library Options for Implementation
+
+| Library | Type | Best For | Complexity |
+|---------|------|----------|------------|
+| **`ink`** | React for CLI | Full TUI control, most flexible | High |
+| **`inquirer-autocomplete-prompt`** | Inquirer plugin | Fuzzy search + select | Low |
+| **`@clack/prompts`** | Modern prompts | Beautiful defaults | Low |
+| **`enquirer`** | Prompts library | Autocomplete with styling | Medium |
+| **`blessed`** / **`blessed-contrib`** | Low-level TUI | Maximum control | High |
+| **`terminal-kit`** | TUI toolkit | Full terminal control | Medium |
+
+### Recommended Approach
+
+**Option A: Quick Win with `inquirer-autocomplete-prompt`**
+```typescript
+import autocomplete from 'inquirer-autocomplete-prompt';
+
+// Provides fuzzy search + arrow navigation
+// Less visual control but quick to implement
+```
+
+**Option B: Full TUI with `ink`**
+```typescript
+import { render, Box, Text, useInput } from 'ink';
+import SelectInput from 'ink-select-input';
+
+// Full React-like components for terminal
+// Complete control over appearance
+// Can match the reference screenshot exactly
+```
+
+**Option C: Middle Ground with `enquirer`**
+```typescript
+import { AutoComplete } from 'enquirer';
+
+// Good balance of features and simplicity
+// Supports custom styling
+// Built-in fuzzy matching
+```
+
+### Visual Mockup
+
+```
+┌─────────────────────────────────────────────────────┐
+│  OpenRouter                                    esc  │
+│                                                     │
+│  Search: claude_                                    │
+│                                                     │
+│  Anthropic                                          │
+│  ▸ Claude Haiku 3.5                    $0.25/$1.25 │
+│    Claude Opus 4                       $15/$75     │
+│    Claude Opus 4.5                     $15/$75     │
+│    Claude Sonnet 4                     $3/$15      │
+│    Claude Sonnet 4.5                   $3/$15      │
+│                                                     │
+│  OpenAI                                             │
+│    GPT-4o                              $2.50/$10   │
+│    GPT-4o Mini                         $0.15/$0.60 │
+│                                                     │
+│  ─────────────────────────────────────────────────  │
+│  ↑↓ Navigate  Enter Select  Esc Cancel  / Search   │
+└─────────────────────────────────────────────────────┘
+```
+
+### Implementation Considerations
+
+1. **Terminal Compatibility**
+   - Graceful fallback for non-TTY environments
+   - Support for piped input/output
+   - Minimum terminal size requirements
+
+2. **Performance**
+   - Virtualized list for 300+ models
+   - Debounced search input
+   - Efficient re-rendering
+
+3. **Accessibility**
+   - Screen reader support (where possible)
+   - High contrast mode option
+   - Non-color indicators for selection
+
+4. **Configuration**
+   - Remember last selected model
+   - Pinned/favorite models at top
+   - Recently used models section
+
+### Priority Ranking
+
+| Feature | Priority | Effort | Impact |
+|---------|----------|--------|--------|
+| Fuzzy search | High | Medium | High |
+| Arrow navigation | High | Low | High |
+| Highlighted selection | High | Low | High |
+| Provider grouping | Medium | Medium | Medium |
+| Keyboard shortcuts bar | Medium | Low | Medium |
+| Favorites/pinning | Low | Medium | Medium |
+| Collapsible sections | Low | High | Low |
+
+### Next Steps (When Ready to Implement)
+
+1. Choose library based on desired complexity vs. flexibility tradeoff
+2. Create proof-of-concept with `ink` or `enquirer`
+3. Test on various terminals (iTerm2, Terminal.app, Windows Terminal, VS Code)
+4. Implement graceful degradation for limited environments
+5. Add configuration for UI preferences
