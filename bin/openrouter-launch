@@ -13,14 +13,17 @@ set -euo pipefail
 # Constants
 #######################################
 
-readonly VERSION="0.2.0"
+readonly VERSION="0.3.0"
 readonly CONFIG_DIR="$HOME/.openrouter-launch"
 readonly CONFIG_FILE="$CONFIG_DIR/config"
+readonly CACHE_DIR="$HOME/.cache/openrouter"
+readonly CACHE_FILE="$CACHE_DIR/models.json"
+readonly CACHE_TTL=3600  # 1 hour
 readonly OPENROUTER_BASE_URL="https://openrouter.ai/api"
 
-# Model list (name|pricing)
+# Fallback model list (used when API fetch fails and no cache)
 # Using indexed array for bash 3.x compatibility
-MODELS=(
+FALLBACK_MODELS=(
     "anthropic/claude-sonnet-4|\$3/\$15 per 1M tokens"
     "anthropic/claude-opus-4|\$15/\$75 per 1M tokens"
     "anthropic/claude-haiku|\$0.25/\$1.25 per 1M tokens"
@@ -32,6 +35,15 @@ MODELS=(
     "meta-llama/llama-3.3-70b-instruct|\$0.30/\$0.40 per 1M tokens"
     "qwen/qwen-2.5-coder-32b-instruct|\$0.20/\$0.20 per 1M tokens"
 )
+
+# Active model list (populated by load_models)
+MODELS=()
+
+# Optional dependency flag
+HAS_JQ=0
+
+# Refresh models flag
+REFRESH_MODELS=0
 
 #######################################
 # Logging functions (to stderr)
@@ -61,6 +73,239 @@ check_dependencies() {
             exit 1
         fi
     done
+}
+
+check_optional_dependencies() {
+    if command -v jq &>/dev/null; then
+        HAS_JQ=1
+    else
+        log_info "jq not found - using cached/fallback model list"
+        log_info "Install jq for live model fetching: https://jqlang.github.io/jq/"
+    fi
+}
+
+#######################################
+# Model caching
+#######################################
+
+get_cache_mtime() {
+    local file="$1"
+    if [[ ! -f "$file" ]]; then
+        echo "0"
+        return
+    fi
+    case "$(uname -s)" in
+        Darwin)
+            stat -f %m "$file" 2>/dev/null || echo "0"
+            ;;
+        *)
+            stat -c %Y "$file" 2>/dev/null || echo "0"
+            ;;
+    esac
+}
+
+is_cache_valid() {
+    if [[ ! -f "$CACHE_FILE" ]]; then
+        return 1
+    fi
+    local mtime
+    local now
+    mtime=$(get_cache_mtime "$CACHE_FILE")
+    now=$(date +%s)
+    local age=$((now - mtime))
+    [[ $age -lt $CACHE_TTL ]]
+}
+
+ensure_cache_dir() {
+    if [[ ! -d "$CACHE_DIR" ]]; then
+        mkdir -p "$CACHE_DIR"
+    fi
+}
+
+#######################################
+# Model fetching
+#######################################
+
+# List of popular coding models to filter by
+# These are prioritized in the model list
+CODING_MODEL_PREFIXES=(
+    "anthropic/claude"
+    "openai/gpt-4"
+    "openai/o1"
+    "openai/o3"
+    "google/gemini"
+    "deepseek/deepseek"
+    "meta-llama/llama"
+    "qwen/qwen"
+    "mistralai/mistral"
+    "mistralai/codestral"
+    "x-ai/grok"
+)
+
+is_coding_model() {
+    local model_id="$1"
+    local prefix
+    for prefix in "${CODING_MODEL_PREFIXES[@]}"; do
+        if [[ "$model_id" == "$prefix"* ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+fetch_models() {
+    if [[ $HAS_JQ -eq 0 ]]; then
+        return 1
+    fi
+
+    log_info "Fetching models from OpenRouter..."
+
+    local response
+    response=$(curl -s --max-time 10 "https://openrouter.ai/api/v1/models" 2>/dev/null)
+
+    if [[ -z "$response" ]]; then
+        log_error "Failed to fetch models from API"
+        return 1
+    fi
+
+    # Validate JSON response
+    if ! echo "$response" | jq -e '.data' &>/dev/null; then
+        log_error "Invalid API response"
+        return 1
+    fi
+
+    # Parse models: filter for coding models, exclude free/preview, format pricing
+    # Price is per token, convert to per 1M tokens
+    local parsed
+    parsed=$(echo "$response" | jq -r '
+        .data
+        | map(select(
+            .id != null and
+            .pricing.prompt != null and
+            .pricing.completion != null and
+            (.id | test(":free$") | not) and
+            (.pricing.prompt | tonumber) >= 0
+        ))
+        | sort_by(.id)
+        | .[]
+        | {
+            id: .id,
+            prompt: ((.pricing.prompt | tonumber) * 1000000),
+            completion: ((.pricing.completion | tonumber) * 1000000)
+        }
+        | "\(.id)|\(.prompt)|\(.completion)"
+    ' 2>/dev/null)
+
+    if [[ -z "$parsed" ]]; then
+        log_error "Failed to parse model data"
+        return 1
+    fi
+
+    # Save to cache file
+    ensure_cache_dir
+    echo "$parsed" > "$CACHE_FILE"
+    log_success "Model list updated ($(echo "$parsed" | wc -l | tr -d ' ') models)"
+    return 0
+}
+
+format_price() {
+    local price="$1"
+    # Format price nicely (e.g., 3.00 -> $3, 0.10 -> $0.10)
+    if command -v awk &>/dev/null; then
+        echo "$price" | awk '{
+            if ($1 >= 1) {
+                printf "$%.0f", $1
+            } else if ($1 > 0) {
+                printf "$%.2f", $1
+            } else {
+                printf "$0"
+            }
+        }'
+    else
+        printf "\$%.2f" "$price"
+    fi
+}
+
+load_models_from_cache() {
+    if [[ ! -f "$CACHE_FILE" ]]; then
+        return 1
+    fi
+
+    MODELS=()
+    local line
+    local coding_models=()
+    local other_models=()
+
+    while IFS= read -r line; do
+        [[ -z "$line" ]] && continue
+        local id prompt completion
+        id="${line%%|*}"
+        local rest="${line#*|}"
+        prompt="${rest%%|*}"
+        completion="${rest#*|}"
+
+        # Format pricing
+        local prompt_fmt completion_fmt
+        prompt_fmt=$(format_price "$prompt")
+        completion_fmt=$(format_price "$completion")
+        local entry="$id|$prompt_fmt/$completion_fmt per 1M tokens"
+
+        # Categorize: coding models first
+        if is_coding_model "$id"; then
+            coding_models+=("$entry")
+        else
+            other_models+=("$entry")
+        fi
+    done < "$CACHE_FILE"
+
+    # Combine: coding models first, limit to top 30 total
+    local count=0
+    for entry in "${coding_models[@]}"; do
+        MODELS+=("$entry")
+        ((count++))
+        [[ $count -ge 30 ]] && break
+    done
+
+    # Add other models if we have room
+    for entry in "${other_models[@]}"; do
+        [[ $count -ge 30 ]] && break
+        MODELS+=("$entry")
+        ((count++))
+    done
+
+    [[ ${#MODELS[@]} -gt 0 ]]
+}
+
+load_models() {
+    local force_refresh="${1:-0}"
+
+    # Try cache first (if not forcing refresh)
+    if [[ "$force_refresh" != "1" ]] && is_cache_valid; then
+        if load_models_from_cache; then
+            return 0
+        fi
+    fi
+
+    # Try to fetch fresh data
+    if [[ $HAS_JQ -eq 1 ]]; then
+        if fetch_models; then
+            if load_models_from_cache; then
+                return 0
+            fi
+        fi
+    fi
+
+    # Try stale cache as fallback
+    if [[ -f "$CACHE_FILE" ]]; then
+        log_info "Using cached model list (may be outdated)"
+        if load_models_from_cache; then
+            return 0
+        fi
+    fi
+
+    # Ultimate fallback: hardcoded list
+    log_info "Using built-in model list"
+    MODELS=("${FALLBACK_MODELS[@]}")
 }
 
 #######################################
@@ -107,16 +352,35 @@ resolve_alias() {
     esac
 }
 
-# Check if model exists in MODELS array
+# Check if model exists in MODELS array (or is a valid OpenRouter model format)
 model_exists() {
     local model="$1"
+
+    # First check loaded models
+    if [[ ${#MODELS[@]} -gt 0 ]]; then
+        local entry
+        for entry in "${MODELS[@]}"; do
+            local name="${entry%%|*}"
+            if [[ "$name" == "$model" ]]; then
+                return 0
+            fi
+        done
+    fi
+
+    # Also check fallback models
     local entry
-    for entry in "${MODELS[@]}"; do
+    for entry in "${FALLBACK_MODELS[@]}"; do
         local name="${entry%%|*}"
         if [[ "$name" == "$model" ]]; then
             return 0
         fi
     done
+
+    # Accept any model in provider/model format
+    if [[ "$model" =~ ^[a-zA-Z0-9_-]+/[a-zA-Z0-9._-]+$ ]]; then
+        return 0
+    fi
+
     return 1
 }
 
@@ -180,6 +444,8 @@ select_model() {
     local selection
     local resolved
 
+    # Load models before showing menu
+    load_models "$REFRESH_MODELS"
     show_model_menu
 
     while true; do
@@ -432,6 +698,7 @@ OPTIONS:
     -m, --model MODEL    Use specific model (name or alias)
     -k, --key KEY        Use API key (overrides saved key)
     --save-default       Save the selected model as default
+    --refresh-models     Force refresh model list from API
     --allow-data-collection
                          Allow providers to collect/train on data (default: deny)
     --sort ORDER         Provider sort order: price|throughput|latency
@@ -511,6 +778,10 @@ main() {
                 save_default=1
                 shift
                 ;;
+            --refresh-models)
+                REFRESH_MODELS=1
+                shift
+                ;;
             --allow-data-collection)
                 DATA_COLLECTION="allow"
                 shift
@@ -555,6 +826,7 @@ main() {
 
     # Check dependencies
     check_dependencies curl
+    check_optional_dependencies
 
     # Handle API key
     if [[ -n "$override_key" ]]; then

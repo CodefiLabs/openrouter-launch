@@ -16,6 +16,9 @@ openrouter-launch
 
 ## Features
 
+- **Live model catalog**: Fetches 300+ models from OpenRouter API (requires jq)
+- **Smart caching**: Model list cached for 1 hour at `~/.cache/openrouter/models.json`
+- **Coding-focused**: Prioritizes popular coding models (Claude, GPT-4, Gemini, etc.)
 - Interactive model selection with pricing info
 - Model aliases (`sonnet`, `opus`, `flash`, etc.)
 - API key validation against OpenRouter
@@ -97,6 +100,7 @@ openrouter-launch -m sonnet --save-default
 -m, --model MODEL        Use specific model (name or alias)
 -k, --key KEY            Use API key (overrides saved key)
 --save-default           Save the selected model as default
+--refresh-models         Force refresh model list from API
 --allow-data-collection  Allow providers to collect/train on data
 --sort ORDER             Provider sort: price|throughput|latency
 -h, --help               Show help message
@@ -149,6 +153,23 @@ PROVIDER_SORT=""
 
 The config file is created with 600 permissions (owner read/write only).
 
+### Model Caching
+
+When jq is installed, openrouter-launch fetches the full model catalog from OpenRouter's API and caches it locally:
+
+- **Cache location**: `~/.cache/openrouter/models.json`
+- **Cache TTL**: 1 hour (3600 seconds)
+- **Fallback behavior**:
+  1. Use cached data if valid (< 1 hour old)
+  2. Fetch fresh data if cache expired and online
+  3. Use stale cache if fetch fails
+  4. Use built-in model list if no cache and jq unavailable
+
+Force a cache refresh with:
+```bash
+openrouter-launch --refresh-models
+```
+
 | Setting | Default | Description |
 |---------|---------|-------------|
 | `OPENROUTER_API_KEY` | - | Your OpenRouter API key |
@@ -170,6 +191,7 @@ openrouter-launch
 - Bash 3.2+
 - curl
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
+- jq (optional, for live model fetching)
 
 ## How It Works
 
