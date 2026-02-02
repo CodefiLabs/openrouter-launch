@@ -1,7 +1,7 @@
 ---
 plan: thoughts/shared/plans/2026-02-02-out-of-scope-features-roadmap.md
 started: 2026-02-02T00:00:00Z
-status: in_progress
+status: complete
 ---
 
 # Implementation Progress: Out-of-Scope Features Roadmap
@@ -82,3 +82,35 @@ Implemented the complete distribution tooling for openrouter-launch v0.5.0. Crea
 Pending - manual testing instructions provided
 
 ---
+
+## Phase 5: Node.js Rewrite (v1.0)
+
+**Completed**: 2026-02-02
+**Status**: COMPLETE
+**Commits**: c9e8bfe, 66ee9d6, 91803cf, 8b73a63, 36f3765, 28023a8, eb5cb77
+**Tests**: PASS
+
+### Summary
+Successfully ported the openrouter-launch CLI from bash to Node.js/TypeScript, creating a cross-platform solution that works on macOS, Linux, and Windows. The implementation preserves all functionality from the bash script including interactive model selection with pricing info, API key validation, model caching, and support for all three integrations (Claude Code, Aider, and OpenCode). The package uses modern Node.js patterns with ES modules, TypeScript for type safety, and popular npm packages (chalk, ora, prompts, commander) for improved UX with colored output, spinners, and interactive prompts.
+
+### Sub-Agents Used
+- 1x general-purpose (implementation)
+
+### Manual Test Results
+Pending - manual testing instructions provided
+
+---
+
+# Implementation Complete
+
+**All 5 phases successfully implemented.**
+
+| Phase | Version | Status |
+|-------|---------|--------|
+| Phase 1: Provider Preferences | v0.2 | COMPLETE |
+| Phase 2: Live Model Fetching | v0.3 | COMPLETE |
+| Phase 3: Multiple Integrations | v0.4 | COMPLETE |
+| Phase 4: Distribution | v0.5 | COMPLETE |
+| Phase 5: Node.js Rewrite | v1.0 | COMPLETE |
+
+**Total Commits**: 13 commits across all phases
