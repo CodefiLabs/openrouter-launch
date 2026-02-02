@@ -100,3 +100,46 @@ All 5 phases completed successfully. The openrouter-launch CLI tool is ready for
 4. 095a537 - feat: add Claude Code launch functionality (Phase 4)
 5. c96d876 - feat: add quick launch mode with save defaults (Phase 5)
 6. 8df971b - docs: add comprehensive README and PRD
+
+---
+
+## Post-MVP Phases
+
+### Phase 1: Provider Preferences (v0.2)
+
+**Completed**: 2026-02-02
+**Status**: COMPLETE
+**Tests**: PASS
+
+### Phase 2: Live Model Fetching (v0.3)
+
+**Completed**: 2026-02-02
+**Status**: COMPLETE
+**Commits**: 83bd261
+**Tests**: PASS
+
+### Phase 3: Multiple Integrations (v0.4)
+
+**Completed**: 2026-02-02
+**Status**: COMPLETE
+**Commits**: 7d94fd8
+**Tests**: PASS
+
+### Phase 4: Distribution (v0.5)
+
+**Completed**: 2026-02-02
+**Status**: COMPLETE
+**Commits**: fdbb6eb, 19f4cdd
+**Tests**: PASS
+
+#### Summary
+Added curl|bash installer (install.sh), GitHub Actions release workflow for automated releases on version tags, and Homebrew formula template. Updated README with new installation methods (curl|bash as primary, Homebrew tap instructions). Bumped version to 0.5.0.
+
+#### Files Created
+- `install.sh` - curl|bash installer (~170 lines)
+- `.github/workflows/release.yml` - GitHub Actions release workflow (~45 lines)
+- `homebrew/openrouter-launch.rb` - Homebrew formula template (~25 lines)
+
+#### Files Modified
+- `README.md` - Added curl|bash and Homebrew installation instructions
+- `bin/openrouter-launch` - Bumped version to 0.5.0
