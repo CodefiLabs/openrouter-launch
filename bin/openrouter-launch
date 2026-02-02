@@ -13,7 +13,7 @@ set -euo pipefail
 # Constants
 #######################################
 
-readonly VERSION="0.1.0"
+readonly VERSION="0.2.0"
 readonly CONFIG_DIR="$HOME/.openrouter-launch"
 readonly CONFIG_FILE="$CONFIG_DIR/config"
 readonly OPENROUTER_BASE_URL="https://openrouter.ai/api"
@@ -240,6 +240,8 @@ maybe_save_default_model() {
 # Global state
 OPENROUTER_API_KEY="${OPENROUTER_API_KEY:-}"
 DEFAULT_MODEL="${DEFAULT_MODEL:-}"
+DATA_COLLECTION="${DATA_COLLECTION:-deny}"
+PROVIDER_SORT="${PROVIDER_SORT:-}"
 
 load_config() {
     # Create config directory if needed
@@ -266,6 +268,8 @@ save_config() {
 
 OPENROUTER_API_KEY="$key"
 DEFAULT_MODEL="$default_model"
+DATA_COLLECTION="$DATA_COLLECTION"
+PROVIDER_SORT="$PROVIDER_SORT"
 EOF
 
     # Set secure permissions
@@ -391,7 +395,16 @@ launch_claude() {
     echo "Launching Claude Code with OpenRouter..." >&2
     echo "  Model: $model" >&2
     echo "  Base URL: $OPENROUTER_BASE_URL" >&2
+    echo "  Data collection: $DATA_COLLECTION" >&2
+    if [[ -n "$PROVIDER_SORT" ]]; then
+        echo "  Provider sort: $PROVIDER_SORT" >&2
+    fi
     echo "" >&2
+
+    # Note: Provider preferences (data_collection, sort) require request body modifications.
+    # Claude Code's Anthropic SDK doesn't support custom request body fields.
+    # These preferences are saved for future integration support.
+    # For now, you can set account-wide preferences at: https://openrouter.ai/settings/privacy
 
     # Execute Claude with any additional arguments
     exec claude "$@"
@@ -419,6 +432,9 @@ OPTIONS:
     -m, --model MODEL    Use specific model (name or alias)
     -k, --key KEY        Use API key (overrides saved key)
     --save-default       Save the selected model as default
+    --allow-data-collection
+                         Allow providers to collect/train on data (default: deny)
+    --sort ORDER         Provider sort order: price|throughput|latency
     -h, --help           Show this help message
     -v, --version        Show version information
 
@@ -429,11 +445,21 @@ MODEL ALIASES:
     flash     → google/gemini-2.0-flash
     gpt4      → openai/gpt-4o
 
+PROVIDER PREFERENCES:
+    By default, openrouter-launch denies data collection by AI providers.
+    Use --allow-data-collection to allow providers that may store/train on data.
+    Use --sort to prioritize providers by price, throughput, or latency.
+
+    Note: Provider preferences are stored in config but require OpenRouter
+    account settings for enforcement. Set at: https://openrouter.ai/settings/privacy
+
 EXAMPLES:
     openrouter-launch                    # Interactive mode
     openrouter-launch claude             # Launch Claude Code
     openrouter-launch claude -m sonnet   # Use Claude Sonnet
     openrouter-launch -m flash           # Use Gemini Flash
+    openrouter-launch --sort price       # Prefer cheapest providers
+    openrouter-launch --allow-data-collection  # Allow data collection
 
 CONFIG:
     Settings saved to: $CONFIG_FILE
@@ -484,6 +510,26 @@ main() {
             --save-default)
                 save_default=1
                 shift
+                ;;
+            --allow-data-collection)
+                DATA_COLLECTION="allow"
+                shift
+                ;;
+            --sort)
+                if [[ -z "${2:-}" ]]; then
+                    log_error "Option $1 requires an argument (price|throughput|latency)"
+                    exit 1
+                fi
+                case "$2" in
+                    price|throughput|latency)
+                        PROVIDER_SORT="$2"
+                        ;;
+                    *)
+                        log_error "Invalid sort order: $2 (must be price|throughput|latency)"
+                        exit 1
+                        ;;
+                esac
+                shift 2
                 ;;
             claude)
                 integration="claude"

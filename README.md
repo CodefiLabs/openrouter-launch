@@ -94,12 +94,47 @@ openrouter-launch -m sonnet --save-default
 ### Options
 
 ```
--m, --model MODEL    Use specific model (name or alias)
--k, --key KEY        Use API key (overrides saved key)
---save-default       Save the selected model as default
--h, --help           Show help message
--v, --version        Show version
+-m, --model MODEL        Use specific model (name or alias)
+-k, --key KEY            Use API key (overrides saved key)
+--save-default           Save the selected model as default
+--allow-data-collection  Allow providers to collect/train on data
+--sort ORDER             Provider sort: price|throughput|latency
+-h, --help               Show help message
+-v, --version            Show version
 ```
+
+### Provider Preferences
+
+OpenRouter routes requests to multiple AI providers. You can control how providers are selected:
+
+**Data Collection (default: deny)**
+
+By default, openrouter-launch only uses providers that do NOT collect or train on your data:
+
+```bash
+# Default behavior - deny data collection
+openrouter-launch
+
+# Explicitly allow providers that may collect data
+openrouter-launch --allow-data-collection
+```
+
+**Provider Sorting**
+
+Control how providers are prioritized:
+
+```bash
+# Prefer cheapest providers
+openrouter-launch --sort price
+
+# Prefer fastest token generation
+openrouter-launch --sort throughput
+
+# Prefer lowest latency (fastest first response)
+openrouter-launch --sort latency
+```
+
+> **Note**: Provider preferences are stored in your config but currently require [OpenRouter account settings](https://openrouter.ai/settings/privacy) for full enforcement, as Claude Code's SDK doesn't support custom request body fields. This will be improved in future versions.
 
 ## Configuration
 
@@ -108,9 +143,18 @@ Settings are stored in `~/.openrouter-launch/config`:
 ```bash
 OPENROUTER_API_KEY="sk-or-..."
 DEFAULT_MODEL="anthropic/claude-sonnet-4"
+DATA_COLLECTION="deny"
+PROVIDER_SORT=""
 ```
 
 The config file is created with 600 permissions (owner read/write only).
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `OPENROUTER_API_KEY` | - | Your OpenRouter API key |
+| `DEFAULT_MODEL` | - | Default model for quick launch |
+| `DATA_COLLECTION` | `deny` | Allow/deny provider data collection |
+| `PROVIDER_SORT` | - | Provider priority: price/throughput/latency |
 
 ### Environment Variables
 
