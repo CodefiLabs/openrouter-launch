@@ -18,6 +18,21 @@ readonly CONFIG_DIR="$HOME/.openrouter-launch"
 readonly CONFIG_FILE="$CONFIG_DIR/config"
 readonly OPENROUTER_BASE_URL="https://openrouter.ai/api"
 
+# Model list (name|pricing)
+# Using indexed array for bash 3.x compatibility
+MODELS=(
+    "anthropic/claude-sonnet-4|\$3/\$15 per 1M tokens"
+    "anthropic/claude-opus-4|\$15/\$75 per 1M tokens"
+    "anthropic/claude-haiku|\$0.25/\$1.25 per 1M tokens"
+    "google/gemini-2.0-flash|\$0.10/\$0.40 per 1M tokens"
+    "google/gemini-2.5-pro|\$1.25/\$10 per 1M tokens"
+    "openai/gpt-4o|\$2.50/\$10 per 1M tokens"
+    "openai/gpt-4o-mini|\$0.15/\$0.60 per 1M tokens"
+    "deepseek/deepseek-chat-v3|\$0.14/\$0.28 per 1M tokens"
+    "meta-llama/llama-3.3-70b-instruct|\$0.30/\$0.40 per 1M tokens"
+    "qwen/qwen-2.5-coder-32b-instruct|\$0.20/\$0.20 per 1M tokens"
+)
+
 #######################################
 # Logging functions (to stderr)
 #######################################
@@ -46,6 +61,156 @@ check_dependencies() {
             exit 1
         fi
     done
+}
+
+#######################################
+# Model alias resolution
+#######################################
+
+resolve_alias() {
+    local alias="$1"
+    case "$alias" in
+        sonnet|sonnet4)
+            echo "anthropic/claude-sonnet-4"
+            ;;
+        opus|opus4)
+            echo "anthropic/claude-opus-4"
+            ;;
+        haiku)
+            echo "anthropic/claude-haiku"
+            ;;
+        flash)
+            echo "google/gemini-2.0-flash"
+            ;;
+        gemini|gemini-pro)
+            echo "google/gemini-2.5-pro"
+            ;;
+        gpt4|gpt4o)
+            echo "openai/gpt-4o"
+            ;;
+        gpt4-mini|gpt4o-mini)
+            echo "openai/gpt-4o-mini"
+            ;;
+        deepseek)
+            echo "deepseek/deepseek-chat-v3"
+            ;;
+        llama|llama3)
+            echo "meta-llama/llama-3.3-70b-instruct"
+            ;;
+        qwen|qwen-coder)
+            echo "qwen/qwen-2.5-coder-32b-instruct"
+            ;;
+        *)
+            # Not an alias, return as-is
+            echo "$alias"
+            ;;
+    esac
+}
+
+# Check if model exists in MODELS array
+model_exists() {
+    local model="$1"
+    local entry
+    for entry in "${MODELS[@]}"; do
+        local name="${entry%%|*}"
+        if [[ "$name" == "$model" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Get model pricing
+get_model_pricing() {
+    local model="$1"
+    local entry
+    for entry in "${MODELS[@]}"; do
+        local name="${entry%%|*}"
+        local pricing="${entry#*|}"
+        if [[ "$name" == "$model" ]]; then
+            echo "$pricing"
+            return 0
+        fi
+    done
+    echo "unknown pricing"
+}
+
+# Resolve model (alias or full name) and validate
+resolve_model() {
+    local input="$1"
+    local resolved
+
+    # Try alias first
+    resolved=$(resolve_alias "$input")
+
+    # Check if it exists
+    if model_exists "$resolved"; then
+        echo "$resolved"
+        return 0
+    fi
+
+    # Not found
+    log_error "Unknown model: $input"
+    log_error "Use --help to see available models and aliases"
+    return 1
+}
+
+#######################################
+# Model selection menu
+#######################################
+
+show_model_menu() {
+    echo "" >&2
+    echo "Select a model:" >&2
+    echo "" >&2
+
+    local i=1
+    local entry
+    for entry in "${MODELS[@]}"; do
+        local name="${entry%%|*}"
+        local pricing="${entry#*|}"
+        printf "  %2d) %-40s %s\n" "$i" "$name" "$pricing" >&2
+        ((i++))
+    done
+
+    echo "" >&2
+}
+
+select_model() {
+    local selection
+    local resolved
+
+    show_model_menu
+
+    while true; do
+        printf "Enter number (1-%d) or model name: " "${#MODELS[@]}" >&2
+        read -r selection
+
+        # Handle empty input
+        if [[ -z "$selection" ]]; then
+            log_error "Please enter a selection"
+            continue
+        fi
+
+        # Check if it's a number
+        if [[ "$selection" =~ ^[0-9]+$ ]]; then
+            if [[ "$selection" -ge 1 && "$selection" -le "${#MODELS[@]}" ]]; then
+                local entry="${MODELS[$((selection-1))]}"
+                resolved="${entry%%|*}"
+                break
+            else
+                log_error "Invalid selection. Enter 1-${#MODELS[@]}"
+                continue
+            fi
+        fi
+
+        # Try as model name or alias
+        if resolved=$(resolve_model "$selection"); then
+            break
+        fi
+    done
+
+    echo "$resolved"
 }
 
 #######################################
