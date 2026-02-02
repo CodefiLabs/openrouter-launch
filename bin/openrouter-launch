@@ -824,7 +824,6 @@ main() {
     local override_key=""
     local integration=""
     local save_default=0
-    local model_was_interactive=0
     local passthrough_args=()
 
     # Parse arguments first (before dependency checks so --help always works)
@@ -935,17 +934,13 @@ main() {
             selected_model="$DEFAULT_MODEL"
         else
             selected_model=$(select_model)
-            model_was_interactive=1
         fi
     fi
 
-    # Save as default if requested via flag
+    # Save as default only if explicitly requested via --save-default flag
     if [[ $save_default -eq 1 ]]; then
         DEFAULT_MODEL="$selected_model"
         save_config "$OPENROUTER_API_KEY" "$DEFAULT_MODEL"
-    # Or prompt if model was selected interactively
-    elif [[ $model_was_interactive -eq 1 ]]; then
-        maybe_save_default_model "$selected_model"
     fi
 
     # Default to Claude integration
