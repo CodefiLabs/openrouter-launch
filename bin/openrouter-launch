@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+#
+# openrouter-launch - Launch AI coding tools with OpenRouter
+# https://github.com/truefrontier/openrouter-launch
+#
+# Usage: openrouter-launch [OPTIONS] [INTEGRATION]
+#
+
+set -euo pipefail
+[[ "${DEBUG:-0}" == "1" ]] && set -x
+
+#######################################
+# Constants
+#######################################
+
+readonly VERSION="0.1.0"
+readonly CONFIG_DIR="$HOME/.openrouter-launch"
+readonly CONFIG_FILE="$CONFIG_DIR/config"
+readonly OPENROUTER_BASE_URL="https://openrouter.ai/api"
+
+#######################################
+# Logging functions (to stderr)
+#######################################
+
+log_info() {
+    echo "[INFO] $*" >&2
+}
+
+log_error() {
+    echo "[ERROR] $*" >&2
+}
+
+log_success() {
+    echo "✓ $*" >&2
+}
+
+#######################################
+# Dependency validation
+#######################################
+
+check_dependencies() {
+    local cmd
+    for cmd in "$@"; do
+        if ! command -v "$cmd" &>/dev/null; then
+            log_error "Missing required command: $cmd"
+            exit 1
+        fi
+    done
+}
+
+#######################################
+# Help and version
+#######################################
+
+show_version() {
+    echo "openrouter-launch version $VERSION"
+}
+
+show_usage() {
+    cat <<EOF
+openrouter-launch - Launch AI coding tools with OpenRouter
+
+USAGE:
+    openrouter-launch [OPTIONS] [INTEGRATION]
+
+INTEGRATIONS:
+    claude          Launch Claude Code (default)
+
+OPTIONS:
+    -m, --model MODEL    Use specific model (name or alias)
+    -k, --key KEY        Use API key (overrides saved key)
+    -h, --help           Show this help message
+    -v, --version        Show version information
+
+MODEL ALIASES:
+    sonnet    → anthropic/claude-sonnet-4
+    opus      → anthropic/claude-opus-4
+    haiku     → anthropic/claude-haiku
+    flash     → google/gemini-2.0-flash
+    gpt4      → openai/gpt-4o
+
+EXAMPLES:
+    openrouter-launch                    # Interactive mode
+    openrouter-launch claude             # Launch Claude Code
+    openrouter-launch claude -m sonnet   # Use Claude Sonnet
+    openrouter-launch -m flash           # Use Gemini Flash
+
+CONFIG:
+    Settings saved to: $CONFIG_FILE
+
+For more information: https://openrouter.ai/docs
+EOF
+}
+
+#######################################
+# Main entry point
+#######################################
+
+main() {
+    # Parse arguments first (before dependency checks so --help always works)
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -h|--help)
+                show_usage
+                exit 0
+                ;;
+            -v|--version)
+                show_version
+                exit 0
+                ;;
+            *)
+                log_error "Unknown option: $1"
+                show_usage
+                exit 1
+                ;;
+        esac
+    done
+
+    # Check dependencies
+    check_dependencies curl
+
+    # Placeholder for interactive mode
+    log_info "Interactive mode not yet implemented"
+    log_info "Use --help for usage information"
+}
+
+main "$@"
