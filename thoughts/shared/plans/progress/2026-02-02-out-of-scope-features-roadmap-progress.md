@@ -64,3 +64,21 @@ Added support for two additional AI coding tools: Aider and OpenCode. Both tools
 Pending - manual testing instructions provided
 
 ---
+
+## Phase 4: Distribution (v0.5)
+
+**Completed**: 2026-02-02
+**Status**: COMPLETE
+**Commits**: fdbb6eb, 19f4cdd, f811291
+**Tests**: PASS
+
+### Summary
+Implemented the complete distribution tooling for openrouter-launch v0.5.0. Created a curl|bash installer (`install.sh`) that downloads the latest release from GitHub, installs to `~/.local/bin` (user) or `/usr/local/bin` (with sudo), creates the `or-launch` symlink, and verifies the installation. Added a GitHub Actions release workflow (`.github/workflows/release.yml`) that triggers on version tags (v*), runs tests via shellcheck before release, and creates releases with auto-generated changelogs. Created a Homebrew formula template (`homebrew/openrouter-launch.rb`) for the external truefrontier/tap repository.
+
+### Sub-Agents Used
+- 1x general-purpose (implementation)
+
+### Manual Test Results
+Pending - manual testing instructions provided
+
+---
