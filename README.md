@@ -11,10 +11,10 @@ Supports:
 
 ```bash
 # Run directly (no install needed)
-npx @truefrontier/openrouter-launch
+npx @vibeathon-us/openrouter-launch
 
 # Or install globally
-npm install -g @truefrontier/openrouter-launch
+npm install -g @vibeathon-us/openrouter-launch
 openrouter-launch
 ```
 
@@ -37,10 +37,10 @@ openrouter-launch
 
 ```bash
 # Run directly with npx (no install needed)
-npx @truefrontier/openrouter-launch
+npx @vibeathon-us/openrouter-launch
 
 # Or install globally
-npm install -g @truefrontier/openrouter-launch
+npm install -g @vibeathon-us/openrouter-launch
 openrouter-launch
 
 # Short alias also available
@@ -52,7 +52,7 @@ Works on macOS, Linux, and Windows. Requires Node.js 18+.
 ### From Source
 
 ```bash
-git clone https://github.com/truefrontier/openrouter-launch.git
+git clone https://github.com/vibeathon-us/openrouter-launch.git
 cd openrouter-launch
 npm install
 npm run build
@@ -64,7 +64,7 @@ npm link
 > **Note**: The bash version (v0.x) is legacy and no longer receives new features like fuzzy search. Consider using the npm version instead.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/truefrontier/openrouter-launch/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vibeathon-us/openrouter-launch/main/install.sh | bash
 ```
 
 ### Legacy: Homebrew (macOS/Linux)
@@ -72,7 +72,7 @@ curl -fsSL https://raw.githubusercontent.com/truefrontier/openrouter-launch/main
 > **Note**: Homebrew installs the legacy bash version.
 
 ```bash
-brew install truefrontier/tap/openrouter-launch
+brew install vibeathon-us/tap/openrouter-launch
 ```
 
 ## Usage
@@ -286,7 +286,7 @@ This routes Claude Code's API requests through OpenRouter, allowing you to use a
 
 ```bash
 # npm version
-npm uninstall -g @truefrontier/openrouter-launch
+npm uninstall -g @vibeathon-us/openrouter-launch
 
 # Bash version
 sudo make uninstall

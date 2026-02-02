@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # openrouter-launch - Launch AI coding tools with OpenRouter
-# https://github.com/truefrontier/openrouter-launch
+# https://github.com/vibeathon-us/openrouter-launch
 #
 # Usage: openrouter-launch [OPTIONS] [INTEGRATION]
 #
@@ -69,7 +69,7 @@ show_deprecation_notice() {
     echo "" >&2
     log_warn "The bash version (v0.x) is legacy and no longer receives new features."
     log_warn "Upgrade to the npm version for fuzzy search, better UI, and cross-platform support:"
-    echo "       npm install -g @truefrontier/openrouter-launch" >&2
+    echo "       npm install -g @vibeathon-us/openrouter-launch" >&2
     echo "" >&2
 }
 

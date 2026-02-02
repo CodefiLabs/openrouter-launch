@@ -1,5 +1,5 @@
 {
-  "name": "@truefrontier/openrouter-launch",
+  "name": "@vibeathon-us/openrouter-launch",
   "version": "1.0.0",
   "description": "Launch AI coding tools with OpenRouter's 400+ model catalog",
   "keywords": [
@@ -15,11 +15,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/truefrontier/openrouter-launch.git"
+    "url": "https://github.com/vibeathon-us/openrouter-launch.git"
   },
-  "homepage": "https://github.com/truefrontier/openrouter-launch#readme",
+  "homepage": "https://github.com/vibeathon-us/openrouter-launch#readme",
   "bugs": {
-    "url": "https://github.com/truefrontier/openrouter-launch/issues"
+    "url": "https://github.com/vibeathon-us/openrouter-launch/issues"
   },
   "type": "module",
   "bin": {

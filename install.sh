@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
 # openrouter-launch installer
-# https://github.com/truefrontier/openrouter-launch
+# https://github.com/vibeathon-us/openrouter-launch
 #
-# Usage: curl -fsSL https://raw.githubusercontent.com/truefrontier/openrouter-launch/main/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/vibeathon-us/openrouter-launch/main/install.sh | bash
 #
 
 set -euo pipefail
@@ -12,7 +12,7 @@ set -euo pipefail
 # Configuration
 #######################################
 
-REPO="truefrontier/openrouter-launch"
+REPO="vibeathon-us/openrouter-launch"
 SCRIPT_NAME="openrouter-launch"
 SYMLINK_NAME="or-launch"
 
