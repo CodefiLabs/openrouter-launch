@@ -76,20 +76,34 @@ export function launchOpenCode(
     OPENROUTER_API_KEY: config.OPENROUTER_API_KEY
   };
 
+  // Map model to OpenCode's internal format
+  const openCodeModel = mapToOpenCodeModel(model);
+
   console.error('');
   console.error('Launching OpenCode with OpenRouter...');
   console.error(`  Model: ${model}`);
+
+  // Build args - prepend --model if we have a valid mapping
+  let args: string[];
+  if (openCodeModel) {
+    args = ['--model', openCodeModel, ...passthroughArgs];
+    console.error(`  OpenCode model ID: ${openCodeModel}`);
+  } else {
+    args = passthroughArgs;
+    console.error('');
+    console.error(`  Warning: Model '${model}' is not in OpenCode's supported list.`);
+    console.error('  OpenCode will use its default model configuration.');
+    console.error('  You can configure a model in ~/.opencode.json or use a supported model.');
+  }
+
   console.error(`  Data collection: ${config.DATA_COLLECTION}`);
   if (config.PROVIDER_SORT) {
     console.error(`  Provider sort: ${config.PROVIDER_SORT}`);
   }
   console.error('');
-  console.error('Note: OpenCode may use its own default OpenRouter models');
-  console.error('      unless you configure ~/.opencode.json with your preferred model.');
-  console.error('');
 
   // Spawn OpenCode, replacing this process
-  const result = spawn.sync('opencode', passthroughArgs, {
+  const result = spawn.sync('opencode', args, {
     env,
     stdio: 'inherit'
   });
