@@ -13,7 +13,7 @@ set -euo pipefail
 # Constants
 #######################################
 
-readonly VERSION="0.3.0"
+readonly VERSION="0.4.0"
 readonly CONFIG_DIR="$HOME/.openrouter-launch"
 readonly CONFIG_FILE="$CONFIG_DIR/config"
 readonly CACHE_DIR="$HOME/.cache/openrouter"
@@ -641,6 +641,22 @@ check_claude_installed() {
     fi
 }
 
+check_aider_installed() {
+    if ! command -v aider &>/dev/null; then
+        log_error "Aider not found"
+        log_error "Install it from: https://aider.chat/docs/install.html"
+        exit 1
+    fi
+}
+
+check_opencode_installed() {
+    if ! command -v opencode &>/dev/null; then
+        log_error "OpenCode not found"
+        log_error "Install it from: https://github.com/opencode-ai/opencode"
+        exit 1
+    fi
+}
+
 launch_claude() {
     local model="$1"
     shift  # Remove model from args, rest are passthrough
@@ -677,6 +693,65 @@ launch_claude() {
 }
 
 #######################################
+# Aider launch
+#######################################
+
+launch_aider() {
+    local model="$1"
+    shift  # Remove model from args, rest are passthrough
+
+    check_aider_installed
+
+    # Aider uses OPENROUTER_API_KEY directly
+    export OPENROUTER_API_KEY="$OPENROUTER_API_KEY"
+
+    # Aider uses openrouter/<model> format for model selection
+    local aider_model="openrouter/$model"
+
+    echo "" >&2
+    echo "Launching Aider with OpenRouter..." >&2
+    echo "  Model: $aider_model" >&2
+    echo "  Data collection: $DATA_COLLECTION" >&2
+    if [[ -n "$PROVIDER_SORT" ]]; then
+        echo "  Provider sort: $PROVIDER_SORT" >&2
+    fi
+    echo "" >&2
+
+    # Execute Aider with model and any additional arguments
+    exec aider --model "$aider_model" "$@"
+}
+
+#######################################
+# OpenCode launch
+#######################################
+
+launch_opencode() {
+    local model="$1"
+    shift  # Remove model from args, rest are passthrough
+
+    check_opencode_installed
+
+    # OpenCode uses OPENROUTER_API_KEY directly
+    # When set, it auto-detects and uses OpenRouter as the provider
+    export OPENROUTER_API_KEY="$OPENROUTER_API_KEY"
+
+    echo "" >&2
+    echo "Launching OpenCode with OpenRouter..." >&2
+    echo "  Model: $model" >&2
+    echo "  Data collection: $DATA_COLLECTION" >&2
+    if [[ -n "$PROVIDER_SORT" ]]; then
+        echo "  Provider sort: $PROVIDER_SORT" >&2
+    fi
+    echo "" >&2
+    echo "Note: OpenCode may use its own default OpenRouter models" >&2
+    echo "      unless you configure ~/.opencode.json with your preferred model." >&2
+    echo "" >&2
+
+    # Execute OpenCode with any additional arguments
+    exec opencode "$@"
+}
+
+#######################################
 # Help and version
 #######################################
 
@@ -693,6 +768,8 @@ USAGE:
 
 INTEGRATIONS:
     claude          Launch Claude Code (default)
+    aider           Launch Aider (https://aider.chat)
+    opencode, oc    Launch OpenCode (https://github.com/opencode-ai/opencode)
 
 OPTIONS:
     -m, --model MODEL    Use specific model (name or alias)
@@ -721,9 +798,12 @@ PROVIDER PREFERENCES:
     account settings for enforcement. Set at: https://openrouter.ai/settings/privacy
 
 EXAMPLES:
-    openrouter-launch                    # Interactive mode
+    openrouter-launch                    # Interactive mode (launches Claude)
     openrouter-launch claude             # Launch Claude Code
-    openrouter-launch claude -m sonnet   # Use Claude Sonnet
+    openrouter-launch claude -m sonnet   # Use Claude Sonnet with Claude Code
+    openrouter-launch aider -m sonnet    # Launch Aider with Claude Sonnet
+    openrouter-launch opencode           # Launch OpenCode
+    openrouter-launch oc                 # Launch OpenCode (short alias)
     openrouter-launch -m flash           # Use Gemini Flash
     openrouter-launch --sort price       # Prefer cheapest providers
     openrouter-launch --allow-data-collection  # Allow data collection
@@ -806,6 +886,14 @@ main() {
                 integration="claude"
                 shift
                 ;;
+            aider)
+                integration="aider"
+                shift
+                ;;
+            opencode|oc)
+                integration="opencode"
+                shift
+                ;;
             --)
                 shift
                 passthrough_args+=("$@")
@@ -868,9 +956,15 @@ main() {
         claude)
             launch_claude "$selected_model" ${passthrough_args[@]+"${passthrough_args[@]}"}
             ;;
+        aider)
+            launch_aider "$selected_model" ${passthrough_args[@]+"${passthrough_args[@]}"}
+            ;;
+        opencode)
+            launch_opencode "$selected_model" ${passthrough_args[@]+"${passthrough_args[@]}"}
+            ;;
         *)
             log_error "Unknown integration: $integration"
-            log_error "Supported: claude"
+            log_error "Supported: claude, aider, opencode"
             exit 1
             ;;
     esac

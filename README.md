@@ -1,6 +1,11 @@
 # openrouter-launch
 
-Launch [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with [OpenRouter's](https://openrouter.ai) 400+ model catalog in one command.
+Launch AI coding tools with [OpenRouter's](https://openrouter.ai) 400+ model catalog in one command.
+
+Supports:
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
+- [Aider](https://aider.chat)
+- [OpenCode](https://github.com/opencode-ai/opencode)
 
 ## Quick Start
 
@@ -77,6 +82,53 @@ openrouter-launch -m anthropic/claude-opus-4
 
 # Save model as default
 openrouter-launch -m sonnet --save-default
+```
+
+### Using Aider
+
+[Aider](https://aider.chat) has native OpenRouter support. openrouter-launch sets up the environment and passes your model selection:
+
+```bash
+# Launch Aider with Claude Sonnet
+openrouter-launch aider -m sonnet
+
+# Launch Aider with Gemini Flash
+openrouter-launch aider -m flash
+
+# Launch Aider with any OpenRouter model
+openrouter-launch aider -m deepseek/deepseek-chat-v3
+```
+
+Aider-specific arguments are passed through:
+
+```bash
+# Aider with specific files
+openrouter-launch aider -m sonnet -- src/main.py tests/
+
+# Aider in architect mode
+openrouter-launch aider -m opus -- --architect
+```
+
+### Using OpenCode
+
+[OpenCode](https://github.com/opencode-ai/opencode) has native OpenRouter support. When `OPENROUTER_API_KEY` is set, OpenCode automatically detects and uses OpenRouter models:
+
+```bash
+# Launch OpenCode
+openrouter-launch opencode
+
+# Short alias
+openrouter-launch oc
+
+# With model selection (note: OpenCode may use its own model defaults)
+openrouter-launch oc -m sonnet
+```
+
+OpenCode-specific arguments are passed through:
+
+```bash
+# OpenCode with specific working directory
+openrouter-launch oc -- --cwd /path/to/project
 ```
 
 ### Model Aliases
@@ -190,8 +242,11 @@ openrouter-launch
 
 - Bash 3.2+
 - curl
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
 - jq (optional, for live model fetching)
+- At least one supported tool:
+  - [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
+  - [Aider](https://aider.chat/docs/install.html)
+  - [OpenCode](https://github.com/opencode-ai/opencode)
 
 ## How It Works
 
