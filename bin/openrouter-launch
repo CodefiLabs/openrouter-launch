@@ -340,6 +340,44 @@ prompt_api_key() {
 }
 
 #######################################
+# Claude Code launch
+#######################################
+
+check_claude_installed() {
+    if ! command -v claude &>/dev/null; then
+        log_error "Claude Code not found"
+        log_error "Install it from: https://docs.anthropic.com/en/docs/claude-code"
+        exit 1
+    fi
+}
+
+launch_claude() {
+    local model="$1"
+    shift  # Remove model from args, rest are passthrough
+
+    check_claude_installed
+
+    # Set environment variables for Claude Code
+    export ANTHROPIC_BASE_URL="$OPENROUTER_BASE_URL"
+    export ANTHROPIC_API_KEY=""
+    export ANTHROPIC_AUTH_TOKEN="$OPENROUTER_API_KEY"
+
+    # Set model override if not using default Anthropic model
+    if [[ -n "$model" ]]; then
+        export ANTHROPIC_MODEL="$model"
+    fi
+
+    echo "" >&2
+    echo "Launching Claude Code with OpenRouter..." >&2
+    echo "  Model: $model" >&2
+    echo "  Base URL: $OPENROUTER_BASE_URL" >&2
+    echo "" >&2
+
+    # Execute Claude with any additional arguments
+    exec claude "$@"
+}
+
+#######################################
 # Help and version
 #######################################
 
@@ -388,6 +426,11 @@ EOF
 #######################################
 
 main() {
+    local selected_model=""
+    local override_key=""
+    local integration=""
+    local passthrough_args=()
+
     # Parse arguments first (before dependency checks so --help always works)
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -399,10 +442,40 @@ main() {
                 show_version
                 exit 0
                 ;;
-            *)
+            -m|--model)
+                if [[ -z "${2:-}" ]]; then
+                    log_error "Option $1 requires an argument"
+                    exit 1
+                fi
+                selected_model=$(resolve_model "$2") || exit 1
+                shift 2
+                ;;
+            -k|--key)
+                if [[ -z "${2:-}" ]]; then
+                    log_error "Option $1 requires an argument"
+                    exit 1
+                fi
+                override_key="$2"
+                shift 2
+                ;;
+            claude)
+                integration="claude"
+                shift
+                ;;
+            --)
+                shift
+                passthrough_args+=("$@")
+                break
+                ;;
+            -*)
                 log_error "Unknown option: $1"
                 show_usage
                 exit 1
+                ;;
+            *)
+                # Unknown positional arg - treat as passthrough
+                passthrough_args+=("$1")
+                shift
                 ;;
         esac
     done
@@ -410,9 +483,42 @@ main() {
     # Check dependencies
     check_dependencies curl
 
-    # Placeholder for interactive mode
-    log_info "Interactive mode not yet implemented"
-    log_info "Use --help for usage information"
+    # Handle API key
+    if [[ -n "$override_key" ]]; then
+        if ! validate_api_key "$override_key"; then
+            exit 1
+        fi
+        OPENROUTER_API_KEY="$override_key"
+    else
+        prompt_api_key
+    fi
+
+    # Handle model selection
+    if [[ -z "$selected_model" ]]; then
+        # Check for default model in config
+        load_config
+        if [[ -n "${DEFAULT_MODEL:-}" ]]; then
+            log_info "Using default model: $DEFAULT_MODEL"
+            selected_model="$DEFAULT_MODEL"
+        else
+            selected_model=$(select_model)
+        fi
+    fi
+
+    # Default to Claude integration
+    integration="${integration:-claude}"
+
+    # Launch based on integration
+    case "$integration" in
+        claude)
+            launch_claude "$selected_model" "${passthrough_args[@]}"
+            ;;
+        *)
+            log_error "Unknown integration: $integration"
+            log_error "Supported: claude"
+            exit 1
+            ;;
+    esac
 }
 
 main "$@"
