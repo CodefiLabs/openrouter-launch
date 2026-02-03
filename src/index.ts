@@ -5,12 +5,12 @@ import prompts from 'prompts';
 import chalk from 'chalk';
 import { loadConfig, saveConfig, getConfigFile } from './config.js';
 import { loadModels, resolveModel, selectModel, resolveAlias, modelExists } from './models.js';
-import { launchClaude, launchAider, launchOpenCode } from './integrations/index.js';
+import { launchClaude, launchAider, launchOpenCode, launchCodex } from './integrations/index.js';
 import { logInfo, logError, logSuccess, isValidApiKeyFormat, validateApiKey } from './utils.js';
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 
-type Integration = 'claude' | 'aider' | 'opencode';
+type Integration = 'claude' | 'aider' | 'opencode' | 'codex';
 
 interface Options {
   model?: string;
@@ -105,7 +105,7 @@ async function main(): Promise<void> {
     .version(VERSION);
 
   program
-    .argument('[integration]', 'Integration to launch: claude, aider, opencode (oc)', 'claude')
+    .argument('[integration]', 'Integration to launch: claude, aider, opencode (oc), codex', 'claude')
     .option('-m, --model <model>', 'Use specific model (name or alias)')
     .option('-k, --key <key>', 'Use API key (overrides saved key)')
     .option('--save-default', 'Save the selected model as default')
@@ -127,9 +127,12 @@ async function main(): Promise<void> {
         case 'oc':
           integration = 'opencode';
           break;
+        case 'codex':
+          integration = 'codex';
+          break;
         default:
           logError(`Unknown integration: ${integrationArg}`);
-          logError('Supported: claude, aider, opencode');
+          logError('Supported: claude, aider, opencode, codex');
           process.exit(1);
       }
 
@@ -211,6 +214,9 @@ async function main(): Promise<void> {
         case 'opencode':
           launchOpenCode(selectedModel, config, passthroughArgs);
           break;
+        case 'codex':
+          launchCodex(selectedModel, config, passthroughArgs);
+          break;
       }
     });
 
@@ -230,6 +236,8 @@ ${chalk.bold('Examples:')}
     openrouter-launch aider -m sonnet    # Launch Aider with Claude Sonnet
     openrouter-launch opencode           # Launch OpenCode
     openrouter-launch oc                 # Launch OpenCode (short alias)
+    openrouter-launch codex              # Launch Codex CLI
+    openrouter-launch codex -m sonnet    # Launch Codex with Claude Sonnet
     openrouter-launch -m flash           # Use Gemini Flash
     openrouter-launch --sort price       # Prefer cheapest providers
 
