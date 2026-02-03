@@ -138,21 +138,8 @@ function loadFromCache(): Model[] | null {
       }
     }
 
-    // Combine: coding models first, limit to 30 total
-    const result: Model[] = [];
-    let count = 0;
-
-    for (const model of codingModels) {
-      if (count >= 30) break;
-      result.push(model);
-      count++;
-    }
-
-    for (const model of otherModels) {
-      if (count >= 30) break;
-      result.push(model);
-      count++;
-    }
+    // Combine: coding models first, then others
+    const result = [...codingModels, ...otherModels];
 
     return result.length > 0 ? result : null;
   } catch {
