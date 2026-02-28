@@ -173,11 +173,15 @@ async function main(): Promise<void> {
       let selectedModel: string | null = null;
 
       if (options.model) {
-        // Load models to validate
+        // Resolve alias and validate against known models
+        const resolved = resolveAlias(options.model);
         const models = await loadModels(options.refreshModels);
-        selectedModel = resolveModel(options.model, models);
-        if (!selectedModel) {
-          process.exit(1);
+        if (modelExists(resolved, models)) {
+          selectedModel = resolved;
+        } else {
+          // Accept unknown models with a warning
+          logInfo(`Warning: '${options.model}' not found in model list, using as-is`);
+          selectedModel = resolved;
         }
       } else if (config.DEFAULT_MODEL) {
         logInfo(`Using default model: ${config.DEFAULT_MODEL}`);
