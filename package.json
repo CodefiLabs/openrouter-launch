@@ -1,6 +1,6 @@
 {
-  "name": "@vibeathon-us/openrouter-launch",
-  "version": "1.1.1",
+  "name": "@codefilabs/openrouter-launch",
+  "version": "1.1.2",
   "description": "Launch AI coding tools with OpenRouter's 400+ model catalog",
   "keywords": [
     "openrouter",
@@ -15,11 +15,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vibeathon-us/openrouter-launch.git"
+    "url": "git+https://github.com/CodefiLabs/openrouter-launch.git"
   },
-  "homepage": "https://github.com/vibeathon-us/openrouter-launch#readme",
+  "homepage": "https://github.com/CodefiLabs/openrouter-launch#readme",
   "bugs": {
-    "url": "https://github.com/vibeathon-us/openrouter-launch/issues"
+    "url": "https://github.com/CodefiLabs/openrouter-launch/issues"
   },
   "type": "module",
   "bin": {
@@ -34,7 +34,8 @@
     "dev": "tsc --watch",
     "test": "node --test",
     "prepare": "npm run build",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "postpublish": "node scripts/update-marketplace.js"
   },
   "dependencies": {
     "chalk": "^5.3.0",
