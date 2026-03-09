@@ -7,14 +7,23 @@ Supports:
 - [Aider](https://aider.chat)
 - [OpenCode](https://github.com/opencode-ai/opencode)
 
+## Claude Code Plugin
+
+Install via the [codefilabs marketplace](https://github.com/codefilabs/marketplace):
+
+```bash
+/plugin marketplace add codefilabs/marketplace
+/plugin install openrouter-launch@codefilabs
+```
+
 ## Quick Start
 
 ```bash
 # Run directly (no install needed)
-npx @vibeathon-us/openrouter-launch
+npx @codefilabs/openrouter-launch
 
 # Or install globally
-npm install -g @vibeathon-us/openrouter-launch
+npm install -g @codefilabs/openrouter-launch
 openrouter-launch
 ```
 
@@ -37,10 +46,10 @@ openrouter-launch
 
 ```bash
 # Run directly with npx (no install needed)
-npx @vibeathon-us/openrouter-launch
+npx @codefilabs/openrouter-launch
 
 # Or install globally
-npm install -g @vibeathon-us/openrouter-launch
+npm install -g @codefilabs/openrouter-launch
 openrouter-launch
 
 # Short alias also available
@@ -52,7 +61,7 @@ Works on macOS, Linux, and Windows. Requires Node.js 18+.
 ### From Source
 
 ```bash
-git clone https://github.com/vibeathon-us/openrouter-launch.git
+git clone https://github.com/CodefiLabs/openrouter-launch.git
 cd openrouter-launch
 npm install
 npm run build
@@ -64,7 +73,7 @@ npm link
 > **Note**: The bash version (v0.x) is legacy and no longer receives new features like fuzzy search. Consider using the npm version instead.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/vibeathon-us/openrouter-launch/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/CodefiLabs/openrouter-launch/main/install.sh | bash
 ```
 
 ### Legacy: Homebrew (macOS/Linux)
@@ -72,7 +81,7 @@ curl -fsSL https://raw.githubusercontent.com/vibeathon-us/openrouter-launch/main
 > **Note**: Homebrew installs the legacy bash version.
 
 ```bash
-brew install vibeathon-us/tap/openrouter-launch
+brew install codefilabs/tap/openrouter-launch
 ```
 
 ## Usage
@@ -286,7 +295,7 @@ This routes Claude Code's API requests through OpenRouter, allowing you to use a
 
 ```bash
 # npm version
-npm uninstall -g @vibeathon-us/openrouter-launch
+npm uninstall -g @codefilabs/openrouter-launch
 
 # Bash version
 sudo make uninstall
